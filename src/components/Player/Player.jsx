@@ -23,7 +23,7 @@ const Player = ({ spotifyApi }) => {
 
 		window.onSpotifyWebPlaybackSDKReady = () => {
 			const player = new window.Spotify.Player({
-				name: 'Techover Playback',
+				name: 'Neo Playback',
 				getOAuthToken: (cb) => {
 					cb(token);
 				},
