@@ -68,11 +68,19 @@ const Player = ({ spotifyApi }) => {
 	useEffect(() => {
 		const transferMyPlayback = async () => {
 			if (device) {
-				await spotifyApi.transferMyPlayback([device], true);
+				try {
+					await spotifyApi.transferMyPlayback([device], true);
+				} catch (error) {
+					console.error('Player: Error transferring playback:', error);
+				}
 			}
 		};
 		const getDeviceFromApi = async () => {
-			await spotifyApi.getMyDevices();
+			try {
+				const devices = await spotifyApi.getMyDevices();
+			} catch (error) {
+				console.error('Player: Error getting devices:', error);
+			}
 		};
 		getDeviceFromApi();
 		transferMyPlayback();

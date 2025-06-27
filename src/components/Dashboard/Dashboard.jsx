@@ -11,19 +11,21 @@ import Library from '../../pages/Library';
 import { Outlet } from 'react-router-dom';
 
 const Dashboard = ({ spotifyApi }) => {
-	const token = useState(getAccessTokenFromStorage());
+	const [token, setToken] = useState(getAccessTokenFromStorage());
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
 		const onMount = async () => {
-			await spotifyApi.setAccessToken(token);
-			setIsLoading(false);
+			if (token) {
+				await spotifyApi.setAccessToken(token);
+				setIsLoading(false);
+			} else {
+				setIsLoading(false);
+			}
 		};
 
-		if (token) {
-			onMount();
-		}
-	}, []);
+		onMount();
+	}, [token, spotifyApi]);
 
 	return (
 		<Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
