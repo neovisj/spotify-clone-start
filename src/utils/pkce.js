@@ -25,6 +25,7 @@ export const getToken = async (code) => {
 	// stored in the previous step
 	const codeVerifier = localStorage.getItem('code_verifier');
 	const url = 'https://accounts.spotify.com/api/token';
+	
 	const payload = {
 		method: 'POST',
 		headers: {
@@ -41,8 +42,6 @@ export const getToken = async (code) => {
 
 	const body = await fetch(url, payload);
 	const response = await body.json();
-
-	console.log('Access Token:', response.access_token);
 
 	if (response.access_token) {
 		sessionStorage.setItem('spotifyToken', response.access_token);
