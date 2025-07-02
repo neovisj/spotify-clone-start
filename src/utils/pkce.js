@@ -25,7 +25,7 @@ export const getToken = async (code) => {
 	// stored in the previous step
 	const codeVerifier = localStorage.getItem('code_verifier');
 	const url = 'https://accounts.spotify.com/api/token';
-	
+
 	const payload = {
 		method: 'POST',
 		headers: {
@@ -45,6 +45,46 @@ export const getToken = async (code) => {
 
 	if (response.access_token) {
 		sessionStorage.setItem('spotifyToken', response.access_token);
+		// Store refresh token for later use
+		if (response.refresh_token) {
+			sessionStorage.setItem('spotifyRefreshToken', response.refresh_token);
+		}
+		// Store token expiration time (1 hour from now)
+		const expiresAt = Date.now() + (response.expires_in * 1000);
+		sessionStorage.setItem('spotifyTokenExpiresAt', expiresAt.toString());
 	}
 	return response.access_token;
+};
+
+export const refreshToken = async () => {
+	const refreshToken = sessionStorage.getItem('spotifyRefreshToken');
+	if (!refreshToken) {
+		throw new Error('No refresh token available');
+	}
+
+	const url = 'https://accounts.spotify.com/api/token';
+	const payload = {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded'
+		},
+		body: new URLSearchParams({
+			client_id: clientId,
+			grant_type: 'refresh_token',
+			refresh_token: refreshToken
+		})
+	};
+
+	const body = await fetch(url, payload);
+	const response = await body.json();
+
+	if (response.access_token) {
+		sessionStorage.setItem('spotifyToken', response.access_token);
+		// Update token expiration time
+		const expiresAt = Date.now() + (response.expires_in * 1000);
+		sessionStorage.setItem('spotifyTokenExpiresAt', expiresAt.toString());
+		return response.access_token;
+	} else {
+		throw new Error('Failed to refresh token');
+	}
 };

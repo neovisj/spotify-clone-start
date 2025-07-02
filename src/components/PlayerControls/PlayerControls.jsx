@@ -3,24 +3,38 @@ import { IconButton, Stack, Typography, Slider, Box } from '@mui/material';
 import { formatTime } from '../../utils/formatTime';
 import { useEffect, useState } from 'react';
 
-const PlayerControls = ({ player, is_paused, duration, progress }) => {
+const PlayerControls = ({ player, is_paused, duration, progress, isConnected }) => {
 	const skipStyle = { width: 28, height: 28 };
 	const [currentProgress, setCurrentProgress] = useState(progress);
 
 	useEffect(() => {
 		const interval = setInterval(() => {
-			if (!is_paused && player) {
+			if (!is_paused && player && isConnected) {
 				setCurrentProgress((c) => c + 1);
 			}
 		}, 1000);
 		return () => clearInterval(interval);
-	}, [is_paused, player]);
+	}, [is_paused, player, isConnected]);
 
 	useEffect(() => {
 		setCurrentProgress(progress);
 	}, [progress]);
 
-	if (!player) return <Box>Transfer playback</Box>;
+	const handlePlayerAction = async (action) => {
+		if (!player || !isConnected) {
+			console.error('Player not available or not connected');
+			return;
+		}
+
+		try {
+			await action();
+		} catch (error) {
+			console.error('Player action failed:', error);
+			// You could show a toast notification here
+		}
+	};
+
+	if (!player || !isConnected) return <Box>Connecting...</Box>;
 
 	return (
 		<Stack direction="column" spacing={2} justify="center" alignItems="center" sx={{ width: '100%' }}>
@@ -28,19 +42,21 @@ const PlayerControls = ({ player, is_paused, duration, progress }) => {
 				<IconButton
 					onClick={() => {
 						setCurrentProgress(0);
-						player.previousTrack();
+						handlePlayerAction(() => player.previousTrack());
 					}}
 					size="small"
 					sx={{ color: 'text.primary' }}
+					disabled={!isConnected}
 				>
 					<SkipPrevious sx={skipStyle} />
 				</IconButton>
 				<IconButton
 					onClick={() => {
-						player.togglePlay();
+						handlePlayerAction(() => player.togglePlay());
 					}}
 					size="small"
 					sx={{ color: 'text.primary' }}
+					disabled={!isConnected}
 				>
 					{is_paused ? (
 						<PlayArrow sx={{ width: 38, height: 38 }} />
@@ -50,10 +66,11 @@ const PlayerControls = ({ player, is_paused, duration, progress }) => {
 				</IconButton>
 				<IconButton
 					onClick={() => {
-						player.nextTrack();
+						handlePlayerAction(() => player.nextTrack());
 					}}
 					size="small"
 					sx={{ color: 'text.primary' }}
+					disabled={!isConnected}
 				>
 					<SkipNext sx={skipStyle} />
 				</IconButton>
@@ -69,10 +86,11 @@ const PlayerControls = ({ player, is_paused, duration, progress }) => {
 						setCurrentProgress(value);
 					}}
 					onChangeCommitted={(e, value) => {
-						player.seek(value * 1000);
+						handlePlayerAction(() => player.seek(value * 1000));
 					}}
 					min={0}
 					size="medium"
+					disabled={!isConnected}
 				/>
 				<Typography variant="body1" sx={{ color: 'text.secondary', fontSize: 12 }}>
 					{formatTime(duration)}

@@ -11,7 +11,7 @@ const SideNav = ({ spotifyApi, token }) => {
 	useEffect(() => {
 		async function getPlaylists() {
 			if (!spotifyApi) return;
-			
+
 			try {
 				const data = await spotifyApi.getUserPlaylists();
 				setLoading(false);

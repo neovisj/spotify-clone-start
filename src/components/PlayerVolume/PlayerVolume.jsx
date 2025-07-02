@@ -2,15 +2,20 @@ import { useState } from 'react';
 import { VolumeDown, VolumeUp, VolumeOff } from '@mui/icons-material';
 import { Grid, Stack, Slider } from '@mui/material';
 
-const PlayerVolume = ({ player }) => {
+const PlayerVolume = ({ player, isConnected }) => {
 	const defaultVolume = 50;
 	const [volume, setVolume] = useState(defaultVolume);
 
 	const handleVolumeChange = async (v) => {
+		if (!player || !isConnected) {
+			console.error('Player not available or not connected for volume change');
+			return;
+		}
+
 		try {
 			await player.setVolume(v / 100);
 		} catch (err) {
-			console.error(err);
+			console.error('Volume change failed:', err);
 		}
 	};
 
@@ -33,6 +38,7 @@ const PlayerVolume = ({ player }) => {
 					value={volume}
 					onChange={(e, v) => setVolume(v)}
 					onChangeCommitted={async (_, value) => handleVolumeChange(value)}
+					disabled={!isConnected}
 				/>
 			</Stack>
 		</Grid>

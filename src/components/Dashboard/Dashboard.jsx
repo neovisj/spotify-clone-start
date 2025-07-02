@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
 import Home from '../../pages/Home';
 import SideNav from '../SideNav/SideNav';
-import { getAccessTokenFromStorage } from '../../utils/getAccessTokenFromStorage';
+import { getAccessTokenFromStorage, getValidToken, clearToken } from '../../utils/getAccessTokenFromStorage';
 import Playlist from '../../pages/Playlist';
 import Player from '../Player/Player';
 import MobileNav from '../MobileNav/MobileNav';
@@ -16,16 +16,31 @@ const Dashboard = ({ spotifyApi }) => {
 
 	useEffect(() => {
 		const onMount = async () => {
-			if (token) {
-				await spotifyApi.setAccessToken(token);
-				setIsLoading(false);
-			} else {
+			try {
+				// Get a valid token (refresh if needed)
+				const validToken = await getValidToken();
+
+				if (validToken) {
+					await spotifyApi.setAccessToken(validToken);
+					setToken(validToken);
+				} else {
+					// No valid token available, redirect to login
+					clearToken();
+					window.location.href = '/login';
+					return;
+				}
+			} catch (error) {
+				console.error('Dashboard: Error setting up token:', error);
+				clearToken();
+				window.location.href = '/login';
+				return;
+			} finally {
 				setIsLoading(false);
 			}
 		};
 
 		onMount();
-	}, [token, spotifyApi]);
+	}, [spotifyApi]);
 
 	return (
 		<Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>

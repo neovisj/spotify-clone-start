@@ -24,7 +24,7 @@ function App({ spotifyApi }) {
 					}
 				>
 					{/* ✅ Nested under /dashboard */}
-					<Route path="home" element={<Home />} />
+					<Route path="" element={<Home />} />
 					<Route path="playlist/:id" element={<Playlist spotifyApi={spotifyApi} />} />
 					<Route path="library" element={<Library spotifyApi={spotifyApi} />} />
 				</Route>

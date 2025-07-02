@@ -6,6 +6,11 @@ const SongRow = ({ images, title, artist, album, duration, i, loading, spotifyAp
 	const image = images?.length > 0 ? images[0] : null;
 
 	const onRowClick = async () => {
+		if (!spotifyApi) {
+			console.error('Spotify API not available');
+			return;
+		}
+
 		const song = {
 			context_uri: contextUri,
 			offset: { position },
@@ -16,7 +21,13 @@ const SongRow = ({ images, title, artist, album, duration, i, loading, spotifyAp
 			duration,
 			position
 		};
-		await spotifyApi.play(song);
+
+		try {
+			await spotifyApi.play(song);
+		} catch (error) {
+			console.error('Failed to play song:', error);
+			// You could show a toast notification here
+		}
 	};
 
 	return (
